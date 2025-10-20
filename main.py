@@ -4,7 +4,7 @@ import shutil
 import utils
 
 if __name__ == '__main__':
-    print('version 1.0.1')
+    print('version 1.0.2')
     # 获得输入输出相关的路径
     input_path = input('批量发票所在路径:(默认为当前路径)')
     if input_path == '':

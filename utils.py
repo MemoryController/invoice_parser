@@ -33,7 +33,7 @@ def get_items_from_invoice(path:str)->dict|None: # 如果返回None则代表fail
                 continue
             if collect_flag:
                 cells = line.split()
-                if len(cells) < 6:
+                if len(cells) == 1:
                     # 上一行剩余的名称没写完
                     for item in items:
                         if item['name'] == last_line_name:
