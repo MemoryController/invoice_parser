@@ -1,6 +1,7 @@
 import os
 import pdfplumber
 
+ITEM_TITLE = ['name','class','unit','count','single_price','total_price','tax_rate','total_tax']
 def get_items_from_invoice(path:str)->dict|None: # 如果返回None则代表fail了
     with pdfplumber.open(path) as pdf:
         full_text = ""
@@ -43,14 +44,17 @@ def get_items_from_invoice(path:str)->dict|None: # 如果返回None则代表fail
                 else:
                     # 新的一个项目名称
                     last_line_name = cells[0]
-                    items.append({
+                    item = {
                         'name': cells[0],
-                        'count': int(cells[-5]),
-                        'single_price':float(cells[-4]),
-                        'total_price':float(cells[-3]),
-                        'tax_rate':cells[-2],
-                        'total_tax':float(cells[-1])
-                    })
+                    }
+                    for i in range(-1,-len(cells),-1):
+                        # 倒序遍历这行的元素
+                        item[ITEM_TITLE[i]] = cells[i]
+                    for i in range(-len(cells),-len(ITEM_TITLE),-1):
+                        # 填充没有的
+                        item[ITEM_TITLE[i]] = '-'
+                    items.append(item)
+
         invoice['id'] = invoice_id
         invoice['date'] = invoice_date
         invoice['company'] = invoice_company
@@ -65,7 +69,7 @@ def extract_items_to_csv(invoices:list[dict],remove_prefix=True)->str:
     将发票内容转换成csv的文字
     :return: csv文件内容
     """
-    content = '发票号码,名称,数量,单价,金额,税率,税额,日期,供应商\n'
+    content = '发票号码,项目名称,规格型号,单位,数量,单价,金额,税率,税额,日期,供应商\n'
     for invoice in invoices:
         id_num = invoice['id']
         date = invoice['date']
@@ -74,7 +78,7 @@ def extract_items_to_csv(invoices:list[dict],remove_prefix=True)->str:
             # 遍历每个项目，添加内容
             if remove_prefix:
                 item["name"] = item["name"].split('*')[-1]
-            content += f'{id_num},{item["name"]},{item["count"]},{item["single_price"]},{item["total_price"]},{item["tax_rate"]},{item["total_tax"]},{date},{company}\n'
+            content += f'{id_num},{item["name"]},{item["class"]},{item["unit"]},{item["count"]},{item["single_price"]},{item["total_price"]},{item["tax_rate"]},{item["total_tax"]},{date},{company}\n'
 
     return content
 
